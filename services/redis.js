@@ -15,4 +15,19 @@ client.on("error", (err) => console.log("Redis Client Error", err));
 
 client.on("connect", () => console.log("Connected to Redis successfully"));
 
+export async function scanKeys(pattern) {
+    let cursor = '0';
+    const keys = [];
+    do {
+        const reply = await redisClient.scan(cursor, {
+            MATCH: pattern,
+            COUNT: 100
+        });
+        cursor = reply.cursor;
+        keys.push(...reply.keys);
+    } while (cursor !== '0');
+    
+    return keys;
+}
+
 export default client;

@@ -2,7 +2,7 @@ import express from "express";
 
 import { isAuthenticated } from "../middleware/middleware.js";
 import { db } from "../services/mysql.js";
-import redisClient from "../services/redis.js";
+import redisClient, { scanKeys } from "../services/redis.js";
 import { getPlaceName } from "../utils/geocoding.js";
 
 const router = express.Router();
@@ -27,7 +27,7 @@ router.post("/create", isAuthenticated, async (req, res) => {
 
     // Clear search cache
     const pattern = `search:products:*:*:*:*:*:*`;
-    const keys = await redisClient.keys(pattern);
+    const keys = await scanKeys(pattern);
     keys.forEach((key) => {
       redisClient.del(key);
     });
