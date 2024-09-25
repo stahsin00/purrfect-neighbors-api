@@ -2,7 +2,7 @@ import express from "express";
 
 import { isAuthenticated } from "../middleware/middleware.js";
 import { db } from "../services/mysql.js";
-import redisClient, { scanKeys } from "../services/redis.js";
+import redisClient, { clearPattern } from "../services/redis.js";
 import { getPlaceName } from "../utils/geocoding.js";
 
 const router = express.Router();
@@ -23,14 +23,11 @@ router.post("/create", isAuthenticated, async (req, res) => {
     );
 
     const cacheKey = `user:${req.user.id}:posts`;
-    await redisClient.del(cacheKey);
+    redisClient.del(cacheKey);
 
     // Clear search cache
     const pattern = `search:products:*:*:*:*:*:*`;
-    const keys = await scanKeys(pattern);
-    keys.forEach((key) => {
-      redisClient.del(key);
-    });
+    clearPattern(pattern);
 
     res.status(201).send({ postId: result.insertId });
   } catch (err) {

@@ -3,7 +3,7 @@ import multer from "multer";
 
 import { isAuthenticated } from "../middleware/middleware.js";
 import { db } from "../services/mysql.js";
-import redisClient, { scanKeys } from "../services/redis.js";
+import redisClient, { clearPattern } from "../services/redis.js";
 import { UploadImage } from "../services/s3.js";
 import { getPlaceName } from "../utils/geocoding.js";
 
@@ -45,10 +45,7 @@ router.post("/create", isAuthenticated, async (req, res) => {
 
     // Clear search cache
     const pattern = `search:pets:*:*:*:*:*:*`;
-    const keys = await scanKeys(pattern);
-    keys.forEach((key) => {
-      redisClient.del(key);
-    });
+    clearPattern(pattern);
 
     res.status(201).send({ postId: result.insertId });
   } catch (err) {

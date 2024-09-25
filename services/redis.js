@@ -15,11 +15,11 @@ client.on("error", (err) => console.log("Redis Client Error", err));
 
 client.on("connect", () => console.log("Connected to Redis successfully"));
 
-export async function scanKeys(pattern) {
+async function scanKeys(pattern) {
     let cursor = '0';
     const keys = [];
     do {
-        const reply = await redisClient.scan(cursor, {
+        const reply = await client.scan(cursor, {
             MATCH: pattern,
             COUNT: 100
         });
@@ -29,5 +29,12 @@ export async function scanKeys(pattern) {
     
     return keys;
 }
+
+export async function clearPattern(pattern) {
+    const keys = await scanKeys(pattern);
+    keys.forEach((key) => {
+      client.del(key);
+    });
+  }
 
 export default client;
